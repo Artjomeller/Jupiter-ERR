@@ -194,8 +194,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👨‍💻 Author
 
 **Artjom Eller**
-- GitHub: [@Artjomeller](https://github.com/Artjomeller)
-- Email: your.email@example.com
+- Email: artjomeller@outlook.com
 
 
 ## 📈 Project Status
