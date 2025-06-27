@@ -1,0 +1,179 @@
+// content-section.component.scss - KOMBINEERITUD VERSIOON
+
+// === PÕHISTIILID (sinu olemasolevad) ===
+.content-section {
+  margin-bottom: 50px;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 25px;
+  color: #ffffff;
+  border-left: 4px solid #ff6b35;
+  padding-left: 20px;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 20px;
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, #ff6b35, transparent);
+  }
+}
+
+.horizontal-scroll-container {
+  overflow-x: auto;
+  padding-bottom: 15px;
+  margin: 0 -20px;
+  padding-left: 20px;
+  padding-right: 20px;
+
+  // Custom scrollbar
+  &::-webkit-scrollbar {
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #ff6b35, #e55a2e);
+    border-radius: 5px;
+
+    &:hover {
+      background: linear-gradient(90deg, #e55a2e, #cc4a26);
+    }
+  }
+}
+
+.content-row {
+  display: flex;
+  gap: 20px;
+  min-width: fit-content;
+  padding: 10px 0;
+}
+
+// === UUED FUNKTSIOONID ===
+
+// Section header koos "kuva kõik" nupuga
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 10px;
+  gap: 20px;
+}
+
+// Kuva kõik nupp
+.show-all-btn {
+  background: linear-gradient(135deg, #ff6b35, #e55a2e);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3);
+  white-space: nowrap;
+
+  &:hover {
+    background: linear-gradient(135deg, #e55a2e, #cc4a26);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .btn-icon {
+    font-size: 14px;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover .btn-icon {
+    transform: translateX(2px);
+  }
+}
+
+// Elementide loendur
+.items-counter {
+  font-size: 12px;
+  color: #999999;
+  margin-bottom: 15px;
+  padding-left: 24px;
+  font-weight: 500;
+}
+
+// Grid režiim (kui "kuva kõik" on aktiivne)
+.content-container.grid-mode {
+  .content-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 15px 0;
+  }
+}
+
+// Scroll režiim (tavaline horisontaalne kerimine)
+.content-container:not(.grid-mode) {
+  .content-wrapper {
+    // Kasutab sinu olemasolevaid .horizontal-scroll-container ja .content-row stiile
+  }
+}
+
+// === RESPONSIIVNE DISAIN (sinu olemasolev + täiendused) ===
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 24px;
+    padding-left: 15px;
+
+    &::after {
+      left: 15px;
+      width: 40px;
+    }
+  }
+
+  .horizontal-scroll-container {
+    margin: 0 -15px;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .content-row {
+    gap: 15px;
+  }
+
+  // Uued responsive reeglid
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .show-all-btn {
+    padding: 7px 14px;
+    font-size: 12px;
+    align-self: flex-end;
+  }
+
+  .items-counter {
+    padding-left: 19px;
+  }
+
+  .content-container.grid-mode .content-wrapper {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 15px;
+  }
+}

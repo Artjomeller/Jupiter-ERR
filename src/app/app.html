@@ -1,0 +1,64 @@
+<div class="jupiter-homepage">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="container">
+      <h1>Jupiter ERR</h1>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Sisu laadimine...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error && !loading" class="error-container">
+        <p>{{ error }}</p>
+        <button class="retry-button" (click)="retryLoad()">
+          Proovi uuesti
+        </button>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && !error && contentSections.length === 0" class="empty-state">
+        <p>Sisu ei leitud</p>
+      </div>
+
+      <!-- DEBUG INFO -->
+      <div style="background: yellow; color: black; padding: 10px; margin: 10px;">
+        <strong>🔍 DEBUG INFO:</strong><br>
+        loading: {{ loading }}<br>
+        error: {{ error }}<br>
+        contentSections.length: {{ contentSections.length }}<br>
+        contentSections tüüp: {{ contentSections.constructor.name }}<br>
+
+        <div *ngIf="contentSections.length > 0">
+          <strong>📁 Esimene sektsioon:</strong><br>
+          header: {{ contentSections[0].header }}<br>
+          data.length: {{ contentSections[0].data.length }}<br>
+        </div>
+      </div>
+
+      <!-- Content Sections - KASUTAB ContentSectionComponent -->
+      <section *ngFor="let section of contentSections; trackBy: trackBySection">
+        <app-content-section [section]="section"></app-content-section>
+      </section>
+
+      <!-- Debug Info (only in development) -->
+      <div *ngIf="!loading && contentSections.length > 0" class="debug-info">
+        <small>✅ Laetud {{ contentSections.length }} sektsiooni</small>
+        <div *ngFor="let section of contentSections">
+          <small>📁 {{ section.header }}: {{ section.data.length }} elementi (highTimeline: {{ section.highTimeline }})</small>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<router-outlet></router-outlet>
