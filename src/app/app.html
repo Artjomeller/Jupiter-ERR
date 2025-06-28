@@ -1,5 +1,3 @@
-<!-- app.html - PARANDATUD LEMMIKUTEGA (6 KAARTI) -->
-
 <div class="jupiter-homepage">
   <!-- Header -->
   <header class="page-header">
@@ -19,7 +17,6 @@
     </div>
   </header>
 
-  <!-- Main Content -->
   <main class="main-content">
     <div class="container">
 
@@ -34,7 +31,6 @@
         </div>
       </div>
 
-      <!-- Error State -->
       <div *ngIf="error && !loading" class="error-container">
         <div class="error-icon">⚠️</div>
         <h3>Viga sisu laadimisel</h3>
@@ -47,11 +43,9 @@
         </button>
       </div>
 
-      <!-- LEMMIKUTE SEKTSIOON - TÄPSELT SAMA NAGU CONTENT-SECTION -->
       <div class="content-section" *ngIf="shouldShowFavoritesSection()">
-        <!-- TÄPSELT sama struktuuri nagu content-section.component.html -->
         <div class="section-header">
-          <h2 class="section-title">💖 Minu lemmikud</h2>
+          <h2 class="section-title">Minu lemmikud</h2>
           <div class="section-controls">
             <div class="carousel-controls" *ngIf="!showAllFavorites && hasMultipleFavoritePages()">
               <button
@@ -93,7 +87,6 @@
           </div>
         </div>
 
-        <!-- Items Counter and Page Info - SAMA STIIL NAGU CONTENT-SECTION -->
         <div class="section-info" *ngIf="favorites.length > 0">
           <div class="page-indicator">
             {{ favorites.length }} lemmikut
@@ -103,14 +96,12 @@
           </div>
         </div>
 
-        <!-- Empty State -->
         <div *ngIf="favorites.length === 0" class="favorites-empty">
           <div class="empty-icon">💔</div>
           <h3>Lemmikuid pole veel lisatud</h3>
           <p>Vajuta südame nupule kaartidel, et lisada neid oma lemmikute hulka!</p>
         </div>
 
-        <!-- Carousel Mode - TÄPSELT SAMA STRUKTUURI NAGU CONTENT-SECTION -->
         <div
           class="carousel-container"
           *ngIf="favorites.length > 0 && !showAllFavorites"
@@ -132,7 +123,6 @@
           </div>
         </div>
 
-        <!-- Grid Mode - TÄPSELT SAMA NAGU CONTENT-SECTION -->
         <div class="grid-container" *ngIf="favorites.length > 0 && showAllFavorites">
           <app-content-item
             *ngFor="let item of favorites; trackBy: trackByItem"
@@ -145,7 +135,6 @@
         </div>
       </div>
 
-      <!-- Content Sections -->
       <section *ngFor="let section of contentSections; trackBy: trackBySection"
                class="content-section-wrapper">
         <app-content-section
@@ -157,7 +146,6 @@
     </div>
   </main>
 
-  <!-- Footer -->
   <footer class="page-footer" *ngIf="!loading">
     <div class="container">
       <div class="footer-links">

@@ -2,15 +2,6 @@ import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { ContentItem } from '../../models/jupiter.models';
 
-interface RealContentData {
-  description: string;
-  meta?: {
-    duration?: string;
-    published?: string;
-  };
-  tags: string[];
-}
-
 @Component({
   selector: 'app-content-item',
   standalone: true,
@@ -21,7 +12,6 @@ interface RealContentData {
       (click)="onItemClick()"
       [title]="getTitle()"
     >
-      <!-- PILT TÄIDAB KOGU KAARDI -->
       <div class="image-container">
         <img
           [src]="getImageUrl()"
@@ -32,17 +22,14 @@ interface RealContentData {
         >
       </div>
 
-      <!-- TÜÜBI SILT ÜLEVAL VASAKUL -->
       <div class="content-type-badge">
         {{ getTypeLabel() }}
       </div>
 
-      <!-- KESTUSE SILT ÜLEVAL PAREMAL -->
       <div *ngIf="getDuration()" class="duration-badge">
         {{ getDuration() }}
       </div>
 
-      <!-- SÜDAME NUPP PAREMAL POOL -->
       <button
         class="favorite-btn"
         [class.active]="isFavorite()"
@@ -54,7 +41,6 @@ interface RealContentData {
         </svg>
       </button>
 
-      <!-- INFO OVERLAY - AINULT HOVER'IL -->
       <div class="content-info-overlay">
         <h3 class="content-title">{{ getTitle() }}</h3>
 
@@ -75,7 +61,6 @@ interface RealContentData {
         </div>
       </div>
 
-      <!-- PLAY NUPP - AINULT HOVER'IL -->
       <div *ngIf="isVideo()" class="play-button-overlay">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
           <path d="M8 5v14l11-7z"/>
@@ -90,19 +75,13 @@ export class ContentItemComponent implements OnDestroy {
   @Output() itemClick = new EventEmitter<ContentItem>();
   @Output() favoriteToggle = new EventEmitter<{item: ContentItem, isFavorite: boolean}>();
 
-  realContent: RealContentData | null = null;
-
-  constructor() {}
-
   ngOnDestroy(): void {
-    // Cleanup if needed
   }
 
   onItemClick(): void {
     this.itemClick.emit(this.content);
   }
 
-  // LIHTSUSTATUD LEMMIKUTE LOOGIKA
   isFavorite(): boolean {
     try {
       const favorites = JSON.parse(localStorage.getItem('jupiter_favorites') || '[]');
@@ -113,7 +92,7 @@ export class ContentItemComponent implements OnDestroy {
   }
 
   toggleFavorite(event: Event): void {
-    event.stopPropagation(); // Väldi kaardi kliki
+    event.stopPropagation();
 
     try {
       const favorites = JSON.parse(localStorage.getItem('jupiter_favorites') || '[]');
@@ -121,18 +100,15 @@ export class ContentItemComponent implements OnDestroy {
 
       let updatedFavorites;
       if (isCurrentlyFavorite) {
-        // Eemalda lemmikutest
+
         updatedFavorites = favorites.filter((fav: ContentItem) => fav.id !== this.content.id);
-        console.log('💔 Eemaldatud lemmikutest:', this.getTitle());
       } else {
-        // Lisa lemmikutesse
+
         updatedFavorites = [...favorites, this.content];
-        console.log('💖 Lisatud lemmikutesse:', this.getTitle());
       }
 
       localStorage.setItem('jupiter_favorites', JSON.stringify(updatedFavorites));
 
-      // Teavita parent komponenti
       this.favoriteToggle.emit({
         item: this.content,
         isFavorite: !isCurrentlyFavorite
@@ -148,7 +124,6 @@ export class ContentItemComponent implements OnDestroy {
   }
 
   getDescription(): string {
-    // Proovi leida parem kirjeldus
     const contentAny = this.content as any;
 
     const possibleDescriptions = [
@@ -170,7 +145,6 @@ export class ContentItemComponent implements OnDestroy {
       }
     }
 
-    // Kui ei leia, genereeri fallback
     return this.generateFallbackDescription();
   }
 
@@ -290,7 +264,6 @@ export class ContentItemComponent implements OnDestroy {
     const genres = contentAny.genres || contentAny.categories || contentAny.tags;
 
     if (Array.isArray(genres)) {
-      // Filtreeri välja tüübi nimed, et vältida dubleerimist
       return genres
         .filter(genre => {
           const lowerGenre = genre.toLowerCase();
@@ -324,8 +297,6 @@ export class ContentItemComponent implements OnDestroy {
         })
         .slice(0, 3);
     }
-
-    // ÄRA tagasta tüübi põhiseid fallback žanre, kuna need on juba üleval vasakul nähtavad
     return [];
   }
 }

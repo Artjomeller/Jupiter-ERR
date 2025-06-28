@@ -1,6 +1,3 @@
-// jupiter.models.ts - TÄIELIK PARANDATUD VERSIOON
-
-// API tagastab objekti struktuuri
 export interface ApiResponse {
   data: {
     category: {
@@ -13,7 +10,7 @@ export interface ApiResponse {
 }
 
 export interface FrontPageSection {
-  header: string;           // API kasutab 'header', mitte 'title'
+  header: string;
   headerUrl: string;
   highTimeline: boolean;
   liveBlock: boolean;
@@ -27,14 +24,14 @@ export interface FrontPageSection {
 
 export interface ContentItem {
   id: string;
-  heading?: string;         // API kasutab peamiselt 'heading'
-  headline?: string;        // backup
-  title?: string;          // backup
+  heading?: string;
+  headline?: string;
+  title?: string;
   lead?: string;
   published?: string;
   type?: 'video' | 'audio' | 'article' | 'livestream' | 'series' | 'movie' | 'episode' | string;
   image?: string;
-  verticalPhotos?: any;    // Lihtsustatud - võib olla array, objekt või midagi muud
+  verticalPhotos?: any;
   duration?: string;
   length?: string;
   url?: string;
@@ -54,10 +51,8 @@ export interface PhotoObject {
   [key: string]: any;
 }
 
-// Photo size types
 export type PhotoSize = 'small' | 'medium' | 'large' | 'original' | 'thumbnail' | 'preview';
 
-// Type guard functions for better type safety
 export function isValidContentItem(item: any): item is ContentItem {
   return item &&
     typeof item === 'object' &&
@@ -81,7 +76,6 @@ export function isVideoContent(item: ContentItem): boolean {
     item.type === 'episode';
 }
 
-// Utility type for extracting image URLs
 export interface ImageSource {
   url: string;
   size?: PhotoSize;
