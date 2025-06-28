@@ -1,6 +1,6 @@
-// content-section.component.ts - TÄIUSTATUD VERSIOON
+// content-section.component.ts - AUTOPLAY EEMALDATUD
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FrontPageSection, ContentItem } from '../../models/jupiter.models';
 import { ContentItemComponent } from '../content-item/content-item.component';
@@ -11,183 +11,188 @@ import { ContentItemComponent } from '../content-item/content-item.component';
   imports: [CommonModule, ContentItemComponent],
   template: `
     <div class="content-section" *ngIf="section">
-      <!-- Section Header with Title and Show All Button -->
+      <!-- Section Header with Title and Controls -->
       <div class="section-header">
         <h2 class="section-title">{{ section.header }}</h2>
-        <button
-          *ngIf="hasMoreItems()"
-          class="show-all-btn"
-          (click)="toggleShowAll()"
-        >
-          {{ showAll ? 'Näita vähem' : 'Kuva kõik' }}
-          <span class="btn-icon">{{ showAll ? '←' : '→' }}</span>
-        </button>
-      </div>
-
-      <!-- Items Counter -->
-      <div class="items-counter">
-        {{ getVisibleItemsCount() }} / {{ section.data.length }} elementi
-      </div>
-
-      <!-- Content - kasutab sinu olemasolevaid klasse -->
-      <div class="content-container" [class.grid-mode]="showAll">
-        <div class="horizontal-scroll-container" *ngIf="!showAll">
-          <div class="content-row">
-            <app-content-item
-              *ngFor="let item of getVisibleItems(); trackBy: trackByItem"
-              [content]="item"
+        <div class="section-controls">
+          <div class="carousel-controls" *ngIf="!showAll && hasMultiplePages()">
+            <button
+              class="nav-btn nav-btn-left"
+              (click)="scrollLeft()"
+              [disabled]="currentPage === 0"
+              title="Eelmine"
             >
-            </app-content-item>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+              </svg>
+            </button>
+            <button
+              class="nav-btn nav-btn-right"
+              (click)="scrollRight()"
+              [disabled]="currentPage >= maxPages - 1"
+              title="Järgmine"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+              </svg>
+            </button>
           </div>
+          <button
+            *ngIf="hasMoreItems()"
+            class="show-all-btn"
+            (click)="toggleShowAll()"
+          >
+            {{ showAll ? 'Näita vähem' : 'Kuva kõik' }}
+            <span class="btn-icon">{{ showAll ? '←' : '→' }}</span>
+          </button>
         </div>
+      </div>
 
-        <div class="content-wrapper" *ngIf="showAll">
+      <!-- Items Counter and Page Info -->
+      <div class="section-info">
+        <div class="items-counter">
+          {{ getVisibleItemsCount() }} / {{ section.data.length }} elementi
+        </div>
+        <div class="page-indicator" *ngIf="!showAll && hasMultiplePages()">
+          {{ currentPage + 1 }} / {{ maxPages }}
+        </div>
+      </div>
+
+      <!-- Carousel Mode (Limited Items with Navigation) -->
+      <div class="carousel-container" *ngIf="!showAll">
+        <div
+          class="carousel-track"
+          #carouselTrack
+          [style.transform]="'translateX(' + translateX + 'px)'"
+        >
           <app-content-item
-            *ngFor="let item of getVisibleItems(); trackBy: trackByItem"
+            *ngFor="let item of section.data; trackBy: trackByItem; let i = index"
             [content]="item"
+            (itemClick)="onItemClick($event)"
+            class="carousel-item"
+            [attr.data-index]="i"
           >
           </app-content-item>
         </div>
       </div>
+
+      <!-- Grid Mode (Show All Items) -->
+      <div class="grid-container" *ngIf="showAll">
+        <app-content-item
+          *ngFor="let item of section.data; trackBy: trackByItem"
+          [content]="item"
+          (itemClick)="onItemClick($event)"
+          class="grid-item"
+        >
+        </app-content-item>
+      </div>
+
+      <!-- AUTOPLAY PROGRESS BAR EEMALDATUD -->
     </div>
   `,
   styleUrl: './content-section.component.scss'
 })
-export class ContentSectionComponent {
+export class ContentSectionComponent implements OnInit {
   @Input() section!: FrontPageSection;
+  @ViewChild('carouselTrack', { static: false }) carouselTrack!: ElementRef;
 
+  // Carousel settings
   showAll = false;
-  maxInitialItems = 10; // Alguses näita ainult 10 elementi
+  itemsPerPage = 6;
+  currentPage = 0;
+  maxPages = 0;
+  translateX = 0;
+  itemWidth = 300; // 280px width + 20px gap
 
-  getVisibleItems(): ContentItem[] {
-    if (!this.section?.data) return [];
-
-    if (this.showAll) {
-      return this.section.data;
-    }
-
-    return this.section.data.slice(0, this.maxInitialItems);
+  ngOnInit(): void {
+    this.calculatePages();
   }
 
-  getVisibleItemsCount(): number {
-    return this.getVisibleItems().length;
+  // Page calculations
+  calculatePages(): void {
+    if (!this.section?.data) return;
+    this.maxPages = Math.ceil(this.section.data.length / this.itemsPerPage);
+  }
+
+  hasMultiplePages(): boolean {
+    return this.maxPages > 1;
   }
 
   hasMoreItems(): boolean {
-    return this.section?.data?.length > this.maxInitialItems;
+    return this.section?.data?.length > this.itemsPerPage;
   }
 
+  getVisibleItemsCount(): number {
+    if (this.showAll) {
+      return this.section?.data?.length || 0;
+    }
+    return Math.min(this.itemsPerPage, this.section?.data?.length || 0);
+  }
+
+  // Navigation
+  scrollLeft(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.updateTransform();
+    }
+  }
+
+  scrollRight(): void {
+    if (this.currentPage < this.maxPages - 1) {
+      this.currentPage++;
+      this.updateTransform();
+    }
+  }
+
+  updateTransform(): void {
+    this.translateX = -(this.currentPage * this.itemsPerPage * this.itemWidth);
+  }
+
+  // Show All toggle
   toggleShowAll(): void {
     this.showAll = !this.showAll;
+
+    if (!this.showAll) {
+      this.currentPage = 0;
+      this.translateX = 0;
+    }
+
     console.log(`${this.section.header}: showAll = ${this.showAll}`);
+  }
+
+  // Event handlers
+  onItemClick(item: ContentItem): void {
+    console.log('🖱️ Kliki sisu:', item);
+
+    if (item.id) {
+      const title = item.heading || item.headline || item.title || '';
+      const urlSlug = this.generateUrlSlug(title);
+      const jupiterUrl = `https://jupiter.err.ee/${item.id}/${urlSlug}`;
+
+      console.log('🔗 Avan URL:', jupiterUrl);
+      window.open(jupiterUrl, '_blank');
+    } else {
+      console.warn('⚠️ Elemendil puudub ID, ei saa avada');
+    }
+  }
+
+  // Utility functions
+  private generateUrlSlug(title: string): string {
+    if (!title) return '';
+
+    return title
+      .toLowerCase()
+      .trim()
+      .replace(/ä/g, 'a')
+      .replace(/ö/g, 'o')
+      .replace(/ü/g, 'u')
+      .replace(/õ/g, 'o')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/[\s-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 
   trackByItem(index: number, item: ContentItem): string {
     return item.id;
-  }
-
-  getTitle(item: ContentItem): string {
-    return item.heading || item.headline || item.title || 'Pealkiri puudub';
-  }
-
-  getDescription(item: ContentItem): string {
-    const itemAny = item as any;
-    return item.lead || itemAny.description || itemAny.summary || '';
-  }
-
-  getImageUrl(item: ContentItem): string {
-    // Sama loogika mis varem
-    if (item.verticalPhotos) {
-      if (Array.isArray(item.verticalPhotos)) {
-        if (item.verticalPhotos.length > 0) {
-          const photo = item.verticalPhotos[0];
-          if (photo.photoUrlOriginal) return photo.photoUrlOriginal;
-          if (photo.photoUrlBase) return photo.photoUrlBase;
-          return this.extractImageUrl(photo) || this.getPlaceholderImage();
-        }
-      }
-      else if (typeof item.verticalPhotos === 'object') {
-        const photoKeys = Object.keys(item.verticalPhotos);
-        if (photoKeys.length > 0) {
-          const preferredSizes = ['medium', 'large', 'original', 'small', 'thumbnail'];
-          for (const size of preferredSizes) {
-            if (photoKeys.includes(size)) {
-              const photoObj = item.verticalPhotos as { [key: string]: any };
-              const photo = photoObj[size];
-              const imageUrl = this.extractImageUrl(photo);
-              if (imageUrl) return imageUrl;
-            }
-          }
-        }
-      }
-    }
-
-    const itemAny = item as any;
-    if (itemAny.image && typeof itemAny.image === 'string') {
-      return itemAny.image;
-    }
-
-    return this.getPlaceholderImage();
-  }
-
-  private extractImageUrl(photo: any): string | null {
-    if (!photo) return null;
-
-    if (photo.photoUrlOriginal) return photo.photoUrlOriginal;
-    if (photo.photoUrlBase) return photo.photoUrlBase;
-
-    if (typeof photo === 'string') return photo;
-
-    if (typeof photo === 'object' && photo !== null) {
-      const possibleFields = ['src', 'url', 'href', 'link', 'image', 'original'];
-      for (const field of possibleFields) {
-        if (photo[field] && typeof photo[field] === 'string') {
-          return photo[field];
-        }
-      }
-    }
-
-    return null;
-  }
-
-  private getPlaceholderImage(): string {
-    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIEVycm9yPC90ZXh0Pjwvc3ZnPg==';
-  }
-
-  isVideo(item: ContentItem): boolean {
-    return item.type === 'video' ||
-      item.type === 'livestream' ||
-      item.type === 'series' ||
-      item.type === 'movie' ||
-      item.type === 'episode';
-  }
-
-  onImageError(event: any): void {
-    console.log('Pildi laadimine ebaõnnestus:', event.target.src);
-    event.target.src = this.getPlaceholderImage();
-  }
-
-  formatDate(dateString: string): string {
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffMs = now.getTime() - date.getTime();
-      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-      if (diffDays === 0) {
-        return 'Täna';
-      } else if (diffDays === 1) {
-        return 'Eile';
-      } else if (diffDays < 7) {
-        return `${diffDays} päeva tagasi`;
-      } else {
-        return date.toLocaleDateString('et-EE', {
-          day: 'numeric',
-          month: 'short'
-        });
-      }
-    } catch {
-      return dateString;
-    }
   }
 }

@@ -1,8 +1,21 @@
+<!-- app.html - LIHTSUSTATUD VERSIOON (routes eemaldatud) -->
+
 <div class="jupiter-homepage">
   <!-- Header -->
   <header class="page-header">
     <div class="container">
       <h1>Jupiter ERR</h1>
+      <div class="header-subtitle-wrapper">
+        <p class="header-subtitle">
+          <span class="subtitle-word">Uudised,</span>
+          <span class="subtitle-word">videod</span>
+          <span class="subtitle-word">ja</span>
+          <span class="subtitle-word">sarjad</span>
+          <span class="subtitle-word highlight">KÕIK</span>
+          <span class="subtitle-word">ühes</span>
+          <span class="subtitle-word">kohas</span>
+        </p>
+      </div>
     </div>
   </header>
 
@@ -14,51 +27,76 @@
       <div *ngIf="loading" class="loading-container">
         <div class="loading-spinner"></div>
         <p>Sisu laadimine...</p>
+        <div class="loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
 
       <!-- Error State -->
       <div *ngIf="error && !loading" class="error-container">
+        <div class="error-icon">⚠️</div>
+        <h3>Viga sisu laadimisel</h3>
         <p>{{ error }}</p>
         <button class="retry-button" (click)="retryLoad()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
           Proovi uuesti
         </button>
       </div>
 
       <!-- Empty State -->
       <div *ngIf="!loading && !error && contentSections.length === 0" class="empty-state">
-        <p>Sisu ei leitud</p>
+        <div class="empty-icon">📺</div>
+        <h3>Sisu ei leitud</h3>
+        <p>Hetkel pole saadaval ühtegi sisuosa. Proovige hiljem uuesti.</p>
       </div>
 
-      <!-- DEBUG INFO -->
-      <div style="background: yellow; color: black; padding: 10px; margin: 10px;">
-        <strong>🔍 DEBUG INFO:</strong><br>
-        loading: {{ loading }}<br>
-        error: {{ error }}<br>
-        contentSections.length: {{ contentSections.length }}<br>
-        contentSections tüüp: {{ contentSections.constructor.name }}<br>
+      <!-- Statistics removed per user request -->
 
-        <div *ngIf="contentSections.length > 0">
-          <strong>📁 Esimene sektsioon:</strong><br>
-          header: {{ contentSections[0].header }}<br>
-          data.length: {{ contentSections[0].data.length }}<br>
-        </div>
-      </div>
-
-      <!-- Content Sections - KASUTAB ContentSectionComponent -->
-      <section *ngFor="let section of contentSections; trackBy: trackBySection">
-        <app-content-section [section]="section"></app-content-section>
+      <!-- Content Sections -->
+      <section *ngFor="let section of contentSections; trackBy: trackBySection"
+               class="content-section-wrapper">
+        <app-content-section
+          [section]="section"
+          class="animated-section">
+        </app-content-section>
       </section>
 
-      <!-- Debug Info (only in development) -->
+      <!-- Debug Info (development only) -->
       <div *ngIf="!loading && contentSections.length > 0" class="debug-info">
-        <small>✅ Laetud {{ contentSections.length }} sektsiooni</small>
-        <div *ngFor="let section of contentSections">
-          <small>📁 {{ section.header }}: {{ section.data.length }} elementi (highTimeline: {{ section.highTimeline }})</small>
-        </div>
+        <details>
+          <summary>🔍 Debug Info (arenduseks)</summary>
+          <div class="debug-content">
+            <p><strong>Laetud sektsioonid:</strong> {{ contentSections.length }}</p>
+            <div *ngFor="let section of contentSections; let i = index" class="debug-section">
+              <span class="debug-index">{{ i + 1 }}.</span>
+              <span class="debug-name">{{ section.header }}</span>
+              <span class="debug-count">({{ section.data.length }} elementi)</span>
+              <span class="debug-timeline"
+                    [class.active]="section.highTimeline">
+                {{ section.highTimeline ? '🔥 Aktiivne' : '⭕ Mitteaktiivne' }}
+              </span>
+            </div>
+          </div>
+        </details>
       </div>
 
     </div>
   </main>
+
+  <!-- Footer -->
+  <footer class="page-footer" *ngIf="!loading">
+    <div class="container">
+      <p>&copy; 2025 ERR Jupiter. Kõik õigused kaitstud.</p>
+      <div class="footer-links">
+        <a href="https://err.ee" target="_blank">ERR.ee</a>
+        <a href="https://jupiter.err.ee" target="_blank">Jupiter</a>
+      </div>
+    </div>
+  </footer>
 </div>
 
-<router-outlet></router-outlet>
+<!-- ROUTER-OUTLET EEMALDATUD -->

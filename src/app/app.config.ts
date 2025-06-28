@@ -1,13 +1,12 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptorsFromDi, withFetch } from '@angular/common/http';
+// app.config.ts - LIHTSUSTATUD VERSIOON (routes eemaldatud)
 
-import { routes } from './app.routes';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { provideHttpClient, withInterceptorsFromDi, withFetch } from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    // provideRouter(routes), // EEMALDATUD - ei ole vaja
     provideHttpClient(
       withInterceptorsFromDi(),
       withFetch() // Use fetch API for better CORS support
