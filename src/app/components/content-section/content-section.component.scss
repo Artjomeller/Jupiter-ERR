@@ -1,4 +1,4 @@
-// content-section.component.scss - UUENDATUD VERSIOON (progress bar eemaldatud)
+// content-section.component.scss - LÕPLIK VERSIOON (4 KAARTI)
 
 .content-section {
   margin-bottom: 60px;
@@ -154,13 +154,14 @@
   border: 1px solid rgba(255, 107, 53, 0.2);
 }
 
-// === CAROUSEL CONTAINER ===
+// === CAROUSEL CONTAINER - 6 KAARTI ===
 .carousel-container {
   position: relative;
   overflow: hidden;
   margin: 0 -12px;
   padding: 12px;
   border-radius: 12px;
+  // Eemaldame fikseeritud laiuse, et mahutaks 6 kaarti
 }
 
 .carousel-track {
@@ -171,30 +172,20 @@
 }
 
 .carousel-item {
-  flex: 0 0 280px;
+  flex: 0 0 200px; // Vähendatud 280px-lt 200px-ni
   scroll-snap-align: start;
 }
 
 // === GRID CONTAINER ===
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); // Väiksemad kaardid
   gap: 20px;
   padding: 12px 0;
 }
 
 .grid-item {
   width: 100%;
-}
-
-// === AUTOPLAY PROGRESS BAR - EEMALDATUD ===
-// .autoplay-progress sektsioon täielikult eemaldatud
-
-// === ENHANCED HOVER EFFECTS ===
-.carousel-item,
-.grid-item {
-  // Hover effects are now handled by the content-item component itself
-  // No additional transforms here to avoid conflicts
 }
 
 // === RESPONSIVE DESIGN ===
@@ -213,13 +204,17 @@
     }
   }
 
+  .carousel-container {
+    // Eemaldame ka responsive fikseeritud laiused
+  }
+
   .carousel-item,
   .grid-item {
-    flex: 0 0 260px;
+    flex: 0 0 180px; // Väiksematel ekraanidel veelgi väiksemad
   }
 
   .grid-container {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 16px;
   }
 }
@@ -271,6 +266,7 @@
   .carousel-container {
     margin: 0 -8px;
     padding: 8px;
+    // Eemaldame fikseeritud laiuse
   }
 
   .carousel-track {
@@ -279,11 +275,11 @@
 
   .carousel-item,
   .grid-item {
-    flex: 0 0 240px;
+    flex: 0 0 160px; // Tahvlitel 160px
   }
 
   .grid-container {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 16px;
   }
 }
@@ -312,13 +308,17 @@
     font-size: 12px;
   }
 
+  .carousel-container {
+    // Eemaldame väga väikeste ekraanide fikseeritud laiuse
+  }
+
   .carousel-item,
   .grid-item {
-    flex: 0 0 220px;
+    flex: 0 0 140px; // Telefonides 140px
   }
 
   .grid-container {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 12px;
   }
 }

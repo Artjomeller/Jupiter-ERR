@@ -1,5 +1,3 @@
-<!-- app.html - LIHTSUSTATUD VERSIOON (routes eemaldatud) -->
-
 <div class="jupiter-homepage">
   <!-- Header -->
   <header class="page-header">
@@ -19,7 +17,6 @@
     </div>
   </header>
 
-  <!-- Main Content -->
   <main class="main-content">
     <div class="container">
 
@@ -34,7 +31,6 @@
         </div>
       </div>
 
-      <!-- Error State -->
       <div *ngIf="error && !loading" class="error-container">
         <div class="error-icon">⚠️</div>
         <h3>Viga sisu laadimisel</h3>
@@ -47,56 +43,116 @@
         </button>
       </div>
 
-      <!-- Empty State -->
-      <div *ngIf="!loading && !error && contentSections.length === 0" class="empty-state">
-        <div class="empty-icon">📺</div>
-        <h3>Sisu ei leitud</h3>
-        <p>Hetkel pole saadaval ühtegi sisuosa. Proovige hiljem uuesti.</p>
+      <div class="content-section" *ngIf="shouldShowFavoritesSection()">
+        <div class="section-header">
+          <h2 class="section-title">Minu lemmikud</h2>
+          <div class="section-controls">
+            <div class="carousel-controls" *ngIf="!showAllFavorites && hasMultipleFavoritePages()">
+              <button
+                class="nav-btn nav-btn-left"
+                (click)="scrollFavoritesLeft()"
+                [disabled]="currentFavoritePage === 0"
+                title="Eelmine"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+              </button>
+              <button
+                class="nav-btn nav-btn-right"
+                (click)="scrollFavoritesRight()"
+                [disabled]="currentFavoritePage >= maxFavoritePages - 1"
+                title="Järgmine"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                </svg>
+              </button>
+            </div>
+            <button
+              *ngIf="favorites.length > 6"
+              class="show-all-btn"
+              (click)="toggleShowAllFavorites()"
+            >
+              {{ showAllFavorites ? 'Näita vähem' : 'Kuva kõik' }}
+              <span class="btn-icon">{{ showAllFavorites ? '←' : '→' }}</span>
+            </button>
+            <button
+              *ngIf="favorites.length > 0"
+              class="clear-all-btn"
+              (click)="clearAllFavorites()"
+              title="Kustuta kõik lemmikud">
+              🗑️ Kustuta kõik
+            </button>
+          </div>
+        </div>
+
+        <div class="section-info" *ngIf="favorites.length > 0">
+          <div class="page-indicator">
+            {{ favorites.length }} lemmikut
+          </div>
+          <div class="page-indicator" *ngIf="!showAllFavorites && hasMultipleFavoritePages()">
+            {{ currentFavoritePage + 1 }} / {{ maxFavoritePages }}
+          </div>
+        </div>
+
+        <div *ngIf="favorites.length === 0" class="favorites-empty">
+          <div class="empty-icon">💔</div>
+          <h3>Lemmikuid pole veel lisatud</h3>
+          <p>Vajuta südame nupule kaartidel, et lisada neid oma lemmikute hulka!</p>
+        </div>
+
+        <div
+          class="carousel-container"
+          *ngIf="favorites.length > 0 && !showAllFavorites"
+          (mouseenter)="onFavoritesMouseEnter()"
+          (mouseleave)="onFavoritesMouseLeave()">
+          <div
+            class="carousel-track"
+            [style.transform]="'translateX(' + favoritesTranslateX + 'px)'"
+          >
+            <app-content-item
+              *ngFor="let item of favorites; trackBy: trackByItem; let i = index"
+              [content]="item"
+              (itemClick)="onItemClick($event)"
+              (favoriteToggle)="onFavoriteToggle($event)"
+              class="carousel-item"
+              [attr.data-index]="i"
+            >
+            </app-content-item>
+          </div>
+        </div>
+
+        <div class="grid-container" *ngIf="favorites.length > 0 && showAllFavorites">
+          <app-content-item
+            *ngFor="let item of favorites; trackBy: trackByItem"
+            [content]="item"
+            (itemClick)="onItemClick($event)"
+            (favoriteToggle)="onFavoriteToggle($event)"
+            class="grid-item"
+          >
+          </app-content-item>
+        </div>
       </div>
 
-      <!-- Statistics removed per user request -->
-
-      <!-- Content Sections -->
       <section *ngFor="let section of contentSections; trackBy: trackBySection"
                class="content-section-wrapper">
         <app-content-section
           [section]="section"
-          class="animated-section">
+          class="animated-section"
+          (favoriteToggle)="onFavoriteToggle($event)">
         </app-content-section>
       </section>
-
-      <!-- Debug Info (development only) -->
-      <div *ngIf="!loading && contentSections.length > 0" class="debug-info">
-        <details>
-          <summary>🔍 Debug Info (arenduseks)</summary>
-          <div class="debug-content">
-            <p><strong>Laetud sektsioonid:</strong> {{ contentSections.length }}</p>
-            <div *ngFor="let section of contentSections; let i = index" class="debug-section">
-              <span class="debug-index">{{ i + 1 }}.</span>
-              <span class="debug-name">{{ section.header }}</span>
-              <span class="debug-count">({{ section.data.length }} elementi)</span>
-              <span class="debug-timeline"
-                    [class.active]="section.highTimeline">
-                {{ section.highTimeline ? '🔥 Aktiivne' : '⭕ Mitteaktiivne' }}
-              </span>
-            </div>
-          </div>
-        </details>
-      </div>
-
     </div>
   </main>
 
-  <!-- Footer -->
   <footer class="page-footer" *ngIf="!loading">
     <div class="container">
-      <p>&copy; 2025 ERR Jupiter. Kõik õigused kaitstud.</p>
       <div class="footer-links">
         <a href="https://err.ee" target="_blank">ERR.ee</a>
         <a href="https://jupiter.err.ee" target="_blank">Jupiter</a>
       </div>
+      <p>&copy; 2025 ERR Jupiter DEMO</p>
     </div>
   </footer>
 </div>
-
-<!-- ROUTER-OUTLET EEMALDATUD -->

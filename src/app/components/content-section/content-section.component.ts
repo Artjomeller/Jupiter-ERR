@@ -1,6 +1,4 @@
-// content-section.component.ts - AUTOPLAY EEMALDATUD
-
-import { Component, Input, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ElementRef, ViewChild, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FrontPageSection, ContentItem } from '../../models/jupiter.models';
 import { ContentItemComponent } from '../content-item/content-item.component';
@@ -11,7 +9,7 @@ import { ContentItemComponent } from '../content-item/content-item.component';
   imports: [CommonModule, ContentItemComponent],
   template: `
     <div class="content-section" *ngIf="section">
-      <!-- Section Header with Title and Controls -->
+
       <div class="section-header">
         <h2 class="section-title">{{ section.header }}</h2>
         <div class="section-controls">
@@ -48,18 +46,17 @@ import { ContentItemComponent } from '../content-item/content-item.component';
         </div>
       </div>
 
-      <!-- Items Counter and Page Info -->
       <div class="section-info">
-        <div class="items-counter">
-          {{ getVisibleItemsCount() }} / {{ section.data.length }} elementi
-        </div>
         <div class="page-indicator" *ngIf="!showAll && hasMultiplePages()">
           {{ currentPage + 1 }} / {{ maxPages }}
         </div>
       </div>
 
-      <!-- Carousel Mode (Limited Items with Navigation) -->
-      <div class="carousel-container" *ngIf="!showAll">
+      <div
+        class="carousel-container"
+        *ngIf="!showAll"
+        (mouseenter)="onMouseEnter()"
+        (mouseleave)="onMouseLeave()">
         <div
           class="carousel-track"
           #carouselTrack
@@ -69,6 +66,7 @@ import { ContentItemComponent } from '../content-item/content-item.component';
             *ngFor="let item of section.data; trackBy: trackByItem; let i = index"
             [content]="item"
             (itemClick)="onItemClick($event)"
+            (favoriteToggle)="onFavoriteToggle($event)"
             class="carousel-item"
             [attr.data-index]="i"
           >
@@ -76,39 +74,48 @@ import { ContentItemComponent } from '../content-item/content-item.component';
         </div>
       </div>
 
-      <!-- Grid Mode (Show All Items) -->
       <div class="grid-container" *ngIf="showAll">
         <app-content-item
           *ngFor="let item of section.data; trackBy: trackByItem"
           [content]="item"
           (itemClick)="onItemClick($event)"
+          (favoriteToggle)="onFavoriteToggle($event)"
           class="grid-item"
         >
         </app-content-item>
       </div>
-
-      <!-- AUTOPLAY PROGRESS BAR EEMALDATUD -->
     </div>
   `,
   styleUrl: './content-section.component.scss'
 })
-export class ContentSectionComponent implements OnInit {
+export class ContentSectionComponent implements OnInit, OnDestroy {
   @Input() section!: FrontPageSection;
+  @Output() favoriteToggle = new EventEmitter<{item: ContentItem, isFavorite: boolean}>();
   @ViewChild('carouselTrack', { static: false }) carouselTrack!: ElementRef;
 
-  // Carousel settings
   showAll = false;
   itemsPerPage = 6;
   currentPage = 0;
   maxPages = 0;
   translateX = 0;
-  itemWidth = 300; // 280px width + 20px gap
+  itemWidth = 220; // 200px kaart + 20px gap = 220px
+
+  private autoScrollInterval: any = null;
+  private autoScrollEnabled = true;
+  autoScrollDelay = 10000; // 10 sekundit
 
   ngOnInit(): void {
     this.calculatePages();
+
+    if (this.hasMultiplePages() && !this.showAll) {
+      this.startAutoScroll();
+    }
   }
 
-  // Page calculations
+  ngOnDestroy(): void {
+    this.stopAutoScroll();
+  }
+
   calculatePages(): void {
     if (!this.section?.data) return;
     this.maxPages = Math.ceil(this.section.data.length / this.itemsPerPage);
@@ -129,12 +136,12 @@ export class ContentSectionComponent implements OnInit {
     return Math.min(this.itemsPerPage, this.section?.data?.length || 0);
   }
 
-  // Navigation
   scrollLeft(): void {
     if (this.currentPage > 0) {
       this.currentPage--;
       this.updateTransform();
     }
+    this.restartAutoScroll();
   }
 
   scrollRight(): void {
@@ -142,41 +149,40 @@ export class ContentSectionComponent implements OnInit {
       this.currentPage++;
       this.updateTransform();
     }
+    this.restartAutoScroll();
   }
 
   updateTransform(): void {
     this.translateX = -(this.currentPage * this.itemsPerPage * this.itemWidth);
   }
 
-  // Show All toggle
   toggleShowAll(): void {
     this.showAll = !this.showAll;
 
     if (!this.showAll) {
       this.currentPage = 0;
       this.translateX = 0;
+      if (this.hasMultiplePages()) {
+        this.startAutoScroll();
+      }
+    } else {
+      this.stopAutoScroll();
     }
-
-    console.log(`${this.section.header}: showAll = ${this.showAll}`);
   }
 
-  // Event handlers
   onItemClick(item: ContentItem): void {
-    console.log('🖱️ Kliki sisu:', item);
-
     if (item.id) {
       const title = item.heading || item.headline || item.title || '';
       const urlSlug = this.generateUrlSlug(title);
       const jupiterUrl = `https://jupiter.err.ee/${item.id}/${urlSlug}`;
-
-      console.log('🔗 Avan URL:', jupiterUrl);
       window.open(jupiterUrl, '_blank');
-    } else {
-      console.warn('⚠️ Elemendil puudub ID, ei saa avada');
     }
   }
 
-  // Utility functions
+  onFavoriteToggle(event: {item: ContentItem, isFavorite: boolean}): void {
+    this.favoriteToggle.emit(event);
+  }
+
   private generateUrlSlug(title: string): string {
     if (!title) return '';
 
@@ -194,5 +200,60 @@ export class ContentSectionComponent implements OnInit {
 
   trackByItem(index: number, item: ContentItem): string {
     return item.id;
+  }
+
+  private startAutoScroll(): void {
+    if (!this.autoScrollEnabled || this.showAll || !this.hasMultiplePages()) {
+      return;
+    }
+
+    this.stopAutoScroll();
+
+    this.autoScrollInterval = setInterval(() => {
+      if (!this.showAll && this.hasMultiplePages()) {
+        this.autoScrollNext();
+      } else {
+        this.stopAutoScroll();
+      }
+    }, this.autoScrollDelay);
+  }
+
+  private stopAutoScroll(): void {
+    if (this.autoScrollInterval) {
+      clearInterval(this.autoScrollInterval);
+      this.autoScrollInterval = null;
+    }
+  }
+
+  private restartAutoScroll(): void {
+    this.stopAutoScroll();
+    setTimeout(() => {
+      if (!this.showAll && this.hasMultiplePages()) {
+        this.startAutoScroll();
+      }
+    }, 2000);
+  }
+
+  private autoScrollNext(): void {
+    if (this.currentPage < this.maxPages - 1) {
+      this.currentPage++;
+    } else {
+      this.currentPage = 0;
+    }
+    this.updateTransform();
+  }
+
+  onMouseEnter(): void {
+    this.autoScrollEnabled = false;
+    this.stopAutoScroll();
+  }
+
+  onMouseLeave(): void {
+    this.autoScrollEnabled = true;
+    setTimeout(() => {
+      if (!this.showAll && this.hasMultiplePages()) {
+        this.startAutoScroll();
+      }
+    }, 1000);
   }
 }

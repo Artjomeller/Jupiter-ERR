@@ -1,16 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { ContentItem } from '../../models/jupiter.models';
-
-interface RealContentData {
-  description: string;
-  meta?: {
-    duration?: string;
-    published?: string;
-  };
-  tags: string[];
-}
 
 @Component({
   selector: 'app-content-item',
@@ -22,7 +12,6 @@ interface RealContentData {
       (click)="onItemClick()"
       [title]="getTitle()"
     >
-      <!-- PILT TÄIDAB KOGU KAARDI -->
       <div class="image-container">
         <img
           [src]="getImageUrl()"
@@ -33,17 +22,25 @@ interface RealContentData {
         >
       </div>
 
-      <!-- TÜÜBI SILT ÜLEVAL VASAKUL -->
       <div class="content-type-badge">
         {{ getTypeLabel() }}
       </div>
 
-      <!-- KESTUSE SILT ÜLEVAL PAREMAL -->
       <div *ngIf="getDuration()" class="duration-badge">
         {{ getDuration() }}
       </div>
 
-      <!-- INFO OVERLAY - AINULT HOVER'IL -->
+      <button
+        class="favorite-btn"
+        [class.active]="isFavorite()"
+        (click)="toggleFavorite($event)"
+        [title]="isFavorite() ? 'Eemalda lemmikutest' : 'Lisa lemmikutesse'"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </button>
+
       <div class="content-info-overlay">
         <h3 class="content-title">{{ getTitle() }}</h3>
 
@@ -64,7 +61,6 @@ interface RealContentData {
         </div>
       </div>
 
-      <!-- PLAY NUPP - AINULT HOVER'IL -->
       <div *ngIf="isVideo()" class="play-button-overlay">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
           <path d="M8 5v14l11-7z"/>
@@ -77,17 +73,50 @@ interface RealContentData {
 export class ContentItemComponent implements OnDestroy {
   @Input() content!: ContentItem;
   @Output() itemClick = new EventEmitter<ContentItem>();
-
-  realContent: RealContentData | null = null;
-
-  constructor(private http: HttpClient) {}
+  @Output() favoriteToggle = new EventEmitter<{item: ContentItem, isFavorite: boolean}>();
 
   ngOnDestroy(): void {
-    // Cleanup if needed
   }
 
   onItemClick(): void {
     this.itemClick.emit(this.content);
+  }
+
+  isFavorite(): boolean {
+    try {
+      const favorites = JSON.parse(localStorage.getItem('jupiter_favorites') || '[]');
+      return favorites.some((fav: ContentItem) => fav.id === this.content.id);
+    } catch {
+      return false;
+    }
+  }
+
+  toggleFavorite(event: Event): void {
+    event.stopPropagation();
+
+    try {
+      const favorites = JSON.parse(localStorage.getItem('jupiter_favorites') || '[]');
+      const isCurrentlyFavorite = favorites.some((fav: ContentItem) => fav.id === this.content.id);
+
+      let updatedFavorites;
+      if (isCurrentlyFavorite) {
+
+        updatedFavorites = favorites.filter((fav: ContentItem) => fav.id !== this.content.id);
+      } else {
+
+        updatedFavorites = [...favorites, this.content];
+      }
+
+      localStorage.setItem('jupiter_favorites', JSON.stringify(updatedFavorites));
+
+      this.favoriteToggle.emit({
+        item: this.content,
+        isFavorite: !isCurrentlyFavorite
+      });
+
+    } catch (error) {
+      console.error('Viga lemmikute salvestamisel:', error);
+    }
   }
 
   getTitle(): string {
@@ -95,7 +124,6 @@ export class ContentItemComponent implements OnDestroy {
   }
 
   getDescription(): string {
-    // Proovi leida parem kirjeldus
     const contentAny = this.content as any;
 
     const possibleDescriptions = [
@@ -117,7 +145,6 @@ export class ContentItemComponent implements OnDestroy {
       }
     }
 
-    // Kui ei leia, genereeri fallback
     return this.generateFallbackDescription();
   }
 
@@ -237,7 +264,6 @@ export class ContentItemComponent implements OnDestroy {
     const genres = contentAny.genres || contentAny.categories || contentAny.tags;
 
     if (Array.isArray(genres)) {
-      // Filtreeri välja tüübi nimed, et vältida dubleerimist
       return genres
         .filter(genre => {
           const lowerGenre = genre.toLowerCase();
@@ -271,8 +297,6 @@ export class ContentItemComponent implements OnDestroy {
         })
         .slice(0, 3);
     }
-
-    // ÄRA tagasta tüübi põhiseid fallback žanre, kuna need on juba üleval vasakul nähtavad
     return [];
   }
 }
