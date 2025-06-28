@@ -1,13 +1,13 @@
 // content-item.component.scss - MINIMALISTLIK KUJUNDUS (AINULT PILT + HOVER INFO)
 
 .content-item {
-  flex: 0 0 280px;
+  flex: 0 0 200px; // Vähendatud 280px-lt 200px-ni
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   background: #1a1a1a;
   border-radius: 16px;
   overflow: hidden;
-  height: 420px;
+  height: 320px; // Vähendatud 420px-lt 320px-ni
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.1);
 
@@ -147,6 +147,70 @@
   transition: all 0.3s ease;
 }
 
+// === SÜDAME NUPP PAREMAL POOL ===
+.favorite-btn {
+  position: absolute;
+  top: 50px; // All kestuse sildi alt
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.3s ease;
+  }
+
+  // Tavaline olek - läbipaistev
+  &:not(.active) {
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: scale(1.1);
+
+      svg {
+        color: #ff6b35;
+      }
+    }
+  }
+
+  // Aktiivne olek - täidetud
+  &.active {
+    background: rgba(255, 107, 53, 0.9);
+    border-color: #ff6b35;
+
+    svg {
+      color: #ffffff;
+    }
+
+    &:hover {
+      background: rgba(229, 90, 46, 0.9);
+      transform: scale(1.1);
+      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+    }
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:focus {
+    outline: 2px solid #ff6b35;
+    outline-offset: 2px;
+  }
+}
+
 // === INFO OVERLAY - AINULT HOVER'IL ===
 .content-info-overlay {
   position: absolute;
@@ -263,64 +327,24 @@
   }
 }
 
-// === EEMALDATUD ELEMENDID ===
-// Kõik tavalist content-info, real-content-info jms on eemaldatud
-
 // === RESPONSIVE DESIGN ===
 @media (max-width: 1200px) {
   .content-item {
-    flex: 0 0 260px;
-    height: 380px;
+    flex: 0 0 180px; // Väiksemad kaardid
+    height: 290px;
   }
 
   .content-title {
-    font-size: 18px;
-  }
-
-  .content-description {
-    font-size: 13px;
-  }
-
-  .play-button-overlay {
-    width: 70px;
-    height: 70px;
-
-    svg {
-      width: 28px;
-      height: 28px;
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .content-item {
-    flex: 0 0 240px;
-    height: 360px;
-
-    &:hover {
-      transform: translateY(-8px) scale(1.05);
-    }
-  }
-
-  .content-info-overlay {
-    padding: 20px;
-  }
-
-  .content-title {
-    font-size: 16px;
-    margin-bottom: 12px;
+    font-size: 15px; // Väiksem font
   }
 
   .content-description {
     font-size: 12px;
-    margin-bottom: 16px;
-    -webkit-line-clamp: 3;
   }
 
   .play-button-overlay {
     width: 60px;
     height: 60px;
-    bottom: 20px;
 
     svg {
       width: 24px;
@@ -328,42 +352,46 @@
     }
   }
 
-  .content-type-badge,
-  .duration-badge {
-    padding: 4px 8px;
-    font-size: 10px;
+  .favorite-btn {
+    width: 28px;
+    height: 28px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .content-item {
-    flex: 0 0 220px;
-    height: 340px;
+    flex: 0 0 160px;
+    height: 260px;
 
     &:hover {
-      transform: translateY(-6px) scale(1.03);
+      transform: translateY(-8px) scale(1.05);
     }
   }
 
   .content-info-overlay {
-    padding: 16px;
+    padding: 15px; // Väiksem padding
   }
 
   .content-title {
-    font-size: 15px;
+    font-size: 14px;
     margin-bottom: 10px;
   }
 
   .content-description {
     font-size: 11px;
     margin-bottom: 12px;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 2; // Vähem ridu
   }
 
   .play-button-overlay {
     width: 50px;
     height: 50px;
-    bottom: 16px;
+    bottom: 15px;
 
     svg {
       width: 20px;
@@ -373,17 +401,83 @@
 
   .content-type-badge,
   .duration-badge {
-    top: 8px;
     padding: 3px 6px;
     font-size: 9px;
   }
 
+  .favorite-btn {
+    width: 26px;
+    height: 26px;
+    top: 40px;
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .content-item {
+    flex: 0 0 140px;
+    height: 240px;
+
+    &:hover {
+      transform: translateY(-6px) scale(1.03);
+    }
+  }
+
+  .content-info-overlay {
+    padding: 12px;
+  }
+
+  .content-title {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .content-description {
+    font-size: 10px;
+    margin-bottom: 10px;
+    -webkit-line-clamp: 2;
+  }
+
+  .play-button-overlay {
+    width: 40px;
+    height: 40px;
+    bottom: 12px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .content-type-badge,
+  .duration-badge {
+    top: 6px;
+    padding: 2px 4px;
+    font-size: 8px;
+  }
+
   .content-type-badge {
-    left: 8px;
+    left: 6px;
   }
 
   .duration-badge {
-    right: 8px;
+    right: 6px;
+  }
+
+  .favorite-btn {
+    width: 24px;
+    height: 24px;
+    top: 35px;
+    right: 6px;
+
+    svg {
+      width: 10px;
+      height: 10px;
+    }
   }
 }
 
@@ -424,6 +518,20 @@
     border: 1px solid #ffffff;
   }
 
+  .favorite-btn {
+    background: #000000;
+    border-color: #ffffff;
+
+    svg {
+      color: #ffffff;
+    }
+
+    &.active {
+      background: #ff6b35;
+      border-color: #ffffff;
+    }
+  }
+
   .content-info-overlay {
     background: rgba(0, 0, 0, 0.95);
   }
@@ -452,29 +560,5 @@
         color: #ffffff;
       }
     }
-  }
-}
-
-// === PRINT STYLES ===
-@media print {
-  .content-item {
-    background: white !important;
-    color: black !important;
-    border: 1px solid #000000 !important;
-    box-shadow: none !important;
-    transform: none !important;
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  .content-info-overlay,
-  .play-button-overlay,
-  .content-type-badge,
-  .duration-badge {
-    display: none !important;
-  }
-
-  .content-image {
-    filter: none !important;
   }
 }

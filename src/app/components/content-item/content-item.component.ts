@@ -1,6 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { ContentItem } from '../../models/jupiter.models';
 
 interface RealContentData {
@@ -43,6 +42,18 @@ interface RealContentData {
         {{ getDuration() }}
       </div>
 
+      <!-- SÜDAME NUPP PAREMAL POOL -->
+      <button
+        class="favorite-btn"
+        [class.active]="isFavorite()"
+        (click)="toggleFavorite($event)"
+        [title]="isFavorite() ? 'Eemalda lemmikutest' : 'Lisa lemmikutesse'"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </button>
+
       <!-- INFO OVERLAY - AINULT HOVER'IL -->
       <div class="content-info-overlay">
         <h3 class="content-title">{{ getTitle() }}</h3>
@@ -77,10 +88,11 @@ interface RealContentData {
 export class ContentItemComponent implements OnDestroy {
   @Input() content!: ContentItem;
   @Output() itemClick = new EventEmitter<ContentItem>();
+  @Output() favoriteToggle = new EventEmitter<{item: ContentItem, isFavorite: boolean}>();
 
   realContent: RealContentData | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor() {}
 
   ngOnDestroy(): void {
     // Cleanup if needed
@@ -88,6 +100,47 @@ export class ContentItemComponent implements OnDestroy {
 
   onItemClick(): void {
     this.itemClick.emit(this.content);
+  }
+
+  // LIHTSUSTATUD LEMMIKUTE LOOGIKA
+  isFavorite(): boolean {
+    try {
+      const favorites = JSON.parse(localStorage.getItem('jupiter_favorites') || '[]');
+      return favorites.some((fav: ContentItem) => fav.id === this.content.id);
+    } catch {
+      return false;
+    }
+  }
+
+  toggleFavorite(event: Event): void {
+    event.stopPropagation(); // Väldi kaardi kliki
+
+    try {
+      const favorites = JSON.parse(localStorage.getItem('jupiter_favorites') || '[]');
+      const isCurrentlyFavorite = favorites.some((fav: ContentItem) => fav.id === this.content.id);
+
+      let updatedFavorites;
+      if (isCurrentlyFavorite) {
+        // Eemalda lemmikutest
+        updatedFavorites = favorites.filter((fav: ContentItem) => fav.id !== this.content.id);
+        console.log('💔 Eemaldatud lemmikutest:', this.getTitle());
+      } else {
+        // Lisa lemmikutesse
+        updatedFavorites = [...favorites, this.content];
+        console.log('💖 Lisatud lemmikutesse:', this.getTitle());
+      }
+
+      localStorage.setItem('jupiter_favorites', JSON.stringify(updatedFavorites));
+
+      // Teavita parent komponenti
+      this.favoriteToggle.emit({
+        item: this.content,
+        isFavorite: !isCurrentlyFavorite
+      });
+
+    } catch (error) {
+      console.error('Viga lemmikute salvestamisel:', error);
+    }
   }
 
   getTitle(): string {

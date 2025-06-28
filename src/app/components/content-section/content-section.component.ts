@@ -1,6 +1,6 @@
-// content-section.component.ts - AUTOPLAY EEMALDATUD
+// content-section.component.ts - TÄIELIK FAIL AUTOMAATSE KARUSELLIGA
 
-import { Component, Input, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ElementRef, ViewChild, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FrontPageSection, ContentItem } from '../../models/jupiter.models';
 import { ContentItemComponent } from '../content-item/content-item.component';
@@ -50,16 +50,17 @@ import { ContentItemComponent } from '../content-item/content-item.component';
 
       <!-- Items Counter and Page Info -->
       <div class="section-info">
-        <div class="items-counter">
-          {{ getVisibleItemsCount() }} / {{ section.data.length }} elementi
-        </div>
         <div class="page-indicator" *ngIf="!showAll && hasMultiplePages()">
           {{ currentPage + 1 }} / {{ maxPages }}
         </div>
       </div>
 
       <!-- Carousel Mode (Limited Items with Navigation) -->
-      <div class="carousel-container" *ngIf="!showAll">
+      <div
+        class="carousel-container"
+        *ngIf="!showAll"
+        (mouseenter)="onMouseEnter()"
+        (mouseleave)="onMouseLeave()">
         <div
           class="carousel-track"
           #carouselTrack
@@ -69,6 +70,7 @@ import { ContentItemComponent } from '../content-item/content-item.component';
             *ngFor="let item of section.data; trackBy: trackByItem; let i = index"
             [content]="item"
             (itemClick)="onItemClick($event)"
+            (favoriteToggle)="onFavoriteToggle($event)"
             class="carousel-item"
             [attr.data-index]="i"
           >
@@ -82,40 +84,65 @@ import { ContentItemComponent } from '../content-item/content-item.component';
           *ngFor="let item of section.data; trackBy: trackByItem"
           [content]="item"
           (itemClick)="onItemClick($event)"
+          (favoriteToggle)="onFavoriteToggle($event)"
           class="grid-item"
         >
         </app-content-item>
       </div>
-
-      <!-- AUTOPLAY PROGRESS BAR EEMALDATUD -->
     </div>
   `,
   styleUrl: './content-section.component.scss'
 })
-export class ContentSectionComponent implements OnInit {
+export class ContentSectionComponent implements OnInit, OnDestroy {
   @Input() section!: FrontPageSection;
+  @Output() favoriteToggle = new EventEmitter<{item: ContentItem, isFavorite: boolean}>();
   @ViewChild('carouselTrack', { static: false }) carouselTrack!: ElementRef;
 
-  // Carousel settings
+  // Carousel settings - 6 KAARTI
   showAll = false;
   itemsPerPage = 6;
   currentPage = 0;
   maxPages = 0;
   translateX = 0;
-  itemWidth = 300; // 280px width + 20px gap
+  itemWidth = 220; // 200px kaart + 20px gap = 220px
+
+  // AUTOMAATNE KARUSELL
+  private autoScrollInterval: any = null;
+  private autoScrollEnabled = true;
+  autoScrollDelay = 10000; // 10 sekundit
 
   ngOnInit(): void {
     this.calculatePages();
+
+    // Käivita automaatne karusell kui on mitu lehte
+    if (this.hasMultiplePages() && !this.showAll) {
+      this.startAutoScroll();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.stopAutoScroll();
   }
 
   // Page calculations
   calculatePages(): void {
     if (!this.section?.data) return;
     this.maxPages = Math.ceil(this.section.data.length / this.itemsPerPage);
+    console.log('📊 Arvutatakse lehed sektsioonile:', this.section.header, {
+      totalItems: this.section.data.length,
+      itemsPerPage: this.itemsPerPage,
+      maxPages: this.maxPages
+    });
   }
 
   hasMultiplePages(): boolean {
-    return this.maxPages > 1;
+    const result = this.maxPages > 1;
+    console.log('🔢 Kas on mitu lehte?', {
+      maxPages: this.maxPages,
+      hasMultiple: result,
+      section: this.section?.header
+    });
+    return result;
   }
 
   hasMoreItems(): boolean {
@@ -134,18 +161,35 @@ export class ContentSectionComponent implements OnInit {
     if (this.currentPage > 0) {
       this.currentPage--;
       this.updateTransform();
+      console.log('◀️ Skrollin vasakule, leht:', this.currentPage);
     }
+
+    // Restart auto scroll after manual interaction
+    this.restartAutoScroll();
   }
 
   scrollRight(): void {
     if (this.currentPage < this.maxPages - 1) {
       this.currentPage++;
       this.updateTransform();
+      console.log('▶️ Skrollin paremale, leht:', this.currentPage);
+    } else {
+      console.log('🚫 Ei saa enam paremale, jõudsin lõppu');
     }
+
+    // Restart auto scroll after manual interaction
+    this.restartAutoScroll();
   }
 
   updateTransform(): void {
+    // Lihtsam ja usaldusväärsem translateX arvutus
     this.translateX = -(this.currentPage * this.itemsPerPage * this.itemWidth);
+    console.log('📊 Karusell liigub:', {
+      currentPage: this.currentPage,
+      itemsPerPage: this.itemsPerPage,
+      itemWidth: this.itemWidth,
+      translateX: this.translateX
+    });
   }
 
   // Show All toggle
@@ -155,6 +199,13 @@ export class ContentSectionComponent implements OnInit {
     if (!this.showAll) {
       this.currentPage = 0;
       this.translateX = 0;
+      // Käivita automaatne karusell kui läheme tagasi karusell režiimi
+      if (this.hasMultiplePages()) {
+        this.startAutoScroll();
+      }
+    } else {
+      // Peata automaatne karusell kui läheme "kuva kõik" režiimi
+      this.stopAutoScroll();
     }
 
     console.log(`${this.section.header}: showAll = ${this.showAll}`);
@@ -176,6 +227,11 @@ export class ContentSectionComponent implements OnInit {
     }
   }
 
+  onFavoriteToggle(event: {item: ContentItem, isFavorite: boolean}): void {
+    // Edasta event parent komponendile
+    this.favoriteToggle.emit(event);
+  }
+
   // Utility functions
   private generateUrlSlug(title: string): string {
     if (!title) return '';
@@ -194,5 +250,78 @@ export class ContentSectionComponent implements OnInit {
 
   trackByItem(index: number, item: ContentItem): string {
     return item.id;
+  }
+
+  // ========== AUTOMAATNE KARUSELL ==========
+
+  private startAutoScroll(): void {
+    if (!this.autoScrollEnabled || this.showAll || !this.hasMultiplePages()) {
+      return;
+    }
+
+    this.stopAutoScroll(); // Esmalt peata olemasolev
+
+    this.autoScrollInterval = setInterval(() => {
+      if (!this.showAll && this.hasMultiplePages()) {
+        this.autoScrollNext();
+      } else {
+        this.stopAutoScroll();
+      }
+    }, this.autoScrollDelay);
+
+    console.log(`🔄 ${this.section.header}: Automaatne karusell käivitatud (10s interval)`);
+  }
+
+  private stopAutoScroll(): void {
+    if (this.autoScrollInterval) {
+      clearInterval(this.autoScrollInterval);
+      this.autoScrollInterval = null;
+      console.log(`⏹️ ${this.section.header}: Automaatne karusell peatatud`);
+    }
+  }
+
+  private restartAutoScroll(): void {
+    // Restart auto scroll after manual interaction (with delay)
+    this.stopAutoScroll();
+
+    setTimeout(() => {
+      if (!this.showAll && this.hasMultiplePages()) {
+        this.startAutoScroll();
+      }
+    }, 2000); // 2 sekundi paus pärast manuaalset kliki
+  }
+
+  private autoScrollNext(): void {
+    if (this.currentPage < this.maxPages - 1) {
+      // Mine järgmisele lehele
+      this.currentPage++;
+      console.log(`🔄 ${this.section.header}: Automaatne karusell -> leht ${this.currentPage}`);
+    } else {
+      // Jõudsime lõppu, mine tagasi esimesele lehele
+      this.currentPage = 0;
+      console.log(`🔄 ${this.section.header}: Automaatne karusell -> tagasi esimesele lehele`);
+    }
+
+    this.updateTransform();
+  }
+
+  // Peata automaatne karusell kui kasutaja hoverdab üle
+  onMouseEnter(): void {
+    this.autoScrollEnabled = false;
+    this.stopAutoScroll();
+    console.log(`🖱️ ${this.section.header}: Mouse hover - automaatne karusell peatatud`);
+  }
+
+  // Käivita automaatne karusell kui kasutaja eemaldab hiire
+  onMouseLeave(): void {
+    this.autoScrollEnabled = true;
+
+    setTimeout(() => {
+      if (!this.showAll && this.hasMultiplePages()) {
+        this.startAutoScroll();
+      }
+    }, 1000); // 1 sekundi paus
+
+    console.log(`🖱️ ${this.section.header}: Mouse leave - automaatne karusell taaskäivitatud`);
   }
 }
