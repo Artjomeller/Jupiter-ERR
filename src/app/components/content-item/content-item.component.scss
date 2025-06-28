@@ -1,17 +1,16 @@
-// content-item.component.scss - MINIMALISTLIK KUJUNDUS (AINULT PILT + HOVER INFO)
+// content-item.component.scss - PUHAS PROFESSIONAALNE VERSIOON
 
 .content-item {
-  flex: 0 0 200px; // Vähendatud 280px-lt 200px-ni
+  flex: 0 0 200px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   background: #1a1a1a;
   border-radius: 16px;
   overflow: hidden;
-  height: 320px; // Vähendatud 420px-lt 320px-ni
+  height: 320px;
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.1);
 
-  // TAVALINE OLEK: Ainult pilt + tüübi silt
   &:not(:hover) {
     .content-image {
       width: 100%;
@@ -31,7 +30,6 @@
     }
   }
 
-  // HOVER OLEK: Suurendus + hägune pilt + info
   &:hover {
     transform: translateY(-12px) scale(1.08);
     box-shadow:
@@ -57,7 +55,6 @@
       pointer-events: auto;
     }
 
-    // Glowing border effect
     &::after {
       content: '';
       position: absolute;
@@ -93,7 +90,6 @@
   }
 }
 
-// === PILT TÄIDAB KOGU KAARDI ===
 .image-container {
   position: absolute;
   top: 0;
@@ -111,7 +107,6 @@
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-// === TÜÜBI SILT ÜLEVAL VASAKUL ===
 .content-type-badge {
   position: absolute;
   top: 12px;
@@ -130,7 +125,6 @@
   transition: all 0.3s ease;
 }
 
-// === KESTUSE SILT ÜLEVAL PAREMAL ===
 .duration-badge {
   position: absolute;
   top: 12px;
@@ -147,10 +141,10 @@
   transition: all 0.3s ease;
 }
 
-// === SÜDAME NUPP PAREMAL POOL ===
+// SÜDAME NUPP - ÜLEVAL PAREMAL
 .favorite-btn {
   position: absolute;
-  top: 50px; // All kestuse sildi alt
+  top: 50px;
   right: 12px;
   width: 36px;
   height: 36px;
@@ -172,7 +166,6 @@
     transition: all 0.3s ease;
   }
 
-  // Tavaline olek - läbipaistev
   &:not(.active) {
     &:hover {
       background: rgba(255, 255, 255, 0.1);
@@ -185,7 +178,6 @@
     }
   }
 
-  // Aktiivne olek - täidetud
   &.active {
     background: rgba(255, 107, 53, 0.9);
     border-color: #ff6b35;
@@ -211,7 +203,6 @@
   }
 }
 
-// === INFO OVERLAY - AINULT HOVER'IL ===
 .content-info-overlay {
   position: absolute;
   top: 0;
@@ -289,7 +280,6 @@
   }
 }
 
-// === PLAY NUPP - AINULT HOVER'IL ===
 .play-button-overlay {
   position: absolute;
   bottom: 30px;
@@ -313,7 +303,7 @@
     width: 32px;
     height: 32px;
     color: #ffffff;
-    margin-left: 4px; // Play ikoni paremale joondamiseks
+    margin-left: 4px;
   }
 
   &:hover {
@@ -327,15 +317,15 @@
   }
 }
 
-// === RESPONSIVE DESIGN ===
+// RESPONSIVE DESIGN - JÄRJESTIKUSED MUUDATUSED
 @media (max-width: 1200px) {
   .content-item {
-    flex: 0 0 180px; // Väiksemad kaardid
+    flex: 0 0 180px;
     height: 290px;
   }
 
   .content-title {
-    font-size: 15px; // Väiksem font
+    font-size: 15px;
   }
 
   .content-description {
@@ -353,6 +343,7 @@
   }
 
   .favorite-btn {
+    top: 45px;
     width: 28px;
     height: 28px;
 
@@ -374,7 +365,7 @@
   }
 
   .content-info-overlay {
-    padding: 15px; // Väiksem padding
+    padding: 15px;
   }
 
   .content-title {
@@ -385,7 +376,7 @@
   .content-description {
     font-size: 11px;
     margin-bottom: 12px;
-    -webkit-line-clamp: 2; // Vähem ridu
+    -webkit-line-clamp: 2;
   }
 
   .play-button-overlay {
@@ -406,9 +397,10 @@
   }
 
   .favorite-btn {
+    top: 40px;
+    right: 6px;
     width: 26px;
     height: 26px;
-    top: 40px;
 
     svg {
       width: 12px;
@@ -469,10 +461,10 @@
   }
 
   .favorite-btn {
-    width: 24px;
-    height: 24px;
     top: 35px;
     right: 6px;
+    width: 24px;
+    height: 24px;
 
     svg {
       width: 10px;
@@ -481,7 +473,7 @@
   }
 }
 
-// === ACCESSIBILITY ===
+// ACCESSIBILITY
 @media (prefers-reduced-motion: reduce) {
   .content-item,
   .content-image,
@@ -496,7 +488,7 @@
   }
 }
 
-// === HIGH CONTRAST MODE ===
+// HIGH CONTRAST MODE
 @media (prefers-contrast: high) {
   .content-item {
     border: 2px solid #ffffff;
